@@ -23,7 +23,7 @@ def load_files():
     # TODO: Make this path configurable or use a more dynamic approach
     #path ="D:\\dev\\tds-projects\\llm-teaching-assisst\\embeddings-website.npz"
     path_to_website_embeddings = "embeddings-website-minillm.npz"
-    path_to_discourse_embeddings = "embeddings-discourse.minillm.npz"
+    path_to_discourse_embeddings = "embeddings-discourse-minillm.npz"
 
     data = np.load(path_to_website_embeddings)
 
