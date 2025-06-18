@@ -85,7 +85,7 @@ def test_ai2():
     Test the AI functionality by calling the AI model with a sample question.
     """
    
-    question = "If a student scores 10/10 on GA4 as well as a bonus, how would it appear on the dashboard?"
+    question = "should I use podman or docker for my project?"
 
     logger.info("--------------------   --------------------")
     #get top 5 documents

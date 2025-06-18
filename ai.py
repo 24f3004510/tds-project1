@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 import openai
 import logging
 
+from schema import ResponseData
+
 # Configure logging at the start of your application
 logging.basicConfig(format='[ %(levelname)s ] %(message)s', level=logging.INFO)
 
@@ -33,21 +35,23 @@ Please respond in **JSON format** with the following structure:
 {{
   "answer": "<your answer here as a string>",
   "links": [
-    "<URL 1>",
-    "<URL 2>"
+    {{
+        "url": "<link to a relevant resource>",
+        "text": "<short description of the link>"
+    }}
   ]
 }}
 
 Your response should be **strictly in this format** with a valid JSON object. Do not include any additional text outside the object. Only include URLs that are relevant to the answer, and ensure the answer is concise and directly addresses the question asked. Do NOT use any information that is NOT in the context provided.
 """    
-    genai.configure(api_key=GOOGLE_API_KEY)
+
     model = genai.GenerativeModel("gemini-1.5-flash")  # or gemini-1.5
     response = model.generate_content(prompt)
     raw_response = response.text.strip()
-    logger.info("-----Raw response:", raw_response)
+    logger.info("-----Raw response: {raw_response}-----")
     try:
         raw_response = raw_response.replace("```json", "").replace("```", "").strip()
-        parsed = json.loads(raw_response)
+        parsed = ResponseData.model_validate_json(raw_response)
         return parsed
     except json.JSONDecodeError as e:
         print("JSON parsing error!", e)
