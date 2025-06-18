@@ -2,8 +2,11 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI
 import logging
-
+import numpy as np
 from ai import generate_response
+from sklearn.metrics.pairwise import cosine_distances
+from embedding import get_embedding
+
 
 
 # Configure logging at the start of your application
@@ -13,6 +16,45 @@ logger = logging.getLogger("fastapi")
 load_dotenv()
 app = FastAPI()
 
+#loading all data and embeddings
+def load_files():
+    # Load embeddings and texts from the npz file
+    # TODO: Make this path configurable or use a more dynamic approach
+    #path ="D:\\dev\\tds-projects\\llm-teaching-assisst\\embeddings-website.npz"
+    path_to_website_embeddings = "embeddings-website.npz"
+    path_to_discourse_embeddings = "embeddings-discourse.npz"
+
+    data = np.load(path_to_website_embeddings)
+
+    # this function will load the names of the arrays in the .npz file
+    embeddings = data['embeddings']
+    texts = data['texts']
+    urls = data['urls']
+
+    # load the discourse data
+    data = np.load(path_to_discourse_embeddings)
+    embeddings = [*embeddings, *data['embeddings']]
+    texts = [*texts, *data['texts']]
+    urls = [*urls, *data['urls']]
+    return urls, texts, embeddings
+
+all_urls, all_texts, all_embeddings = load_files()
+logger.info(f"------loaded all embeddings, texts and urls -----")
+logger.info(f"Total number of urls: {len(all_urls)}")
+logger.info(f"Total number of texts: {len(all_texts)}")
+logger.info(f"Total number of embeddings: {len(all_embeddings)}")
+#------------------end of loading data------------------
+
+
+#------------------adding semantic search------------------
+def semantic_search(question, urls, texts, embeddings, top_k=5):
+    """
+    Search for the most relevant text chunks for the question.
+    """
+    question_embedding = get_embedding(question)
+    distances = cosine_distances([question_embedding], embeddings)[0]
+    top_indices = distances.argsort()[:top_k]
+    return [{"url": urls[i], "text": texts[i]} for i in top_indices]
 
 @app.get("/")
 async def root():
@@ -32,6 +74,29 @@ def test_ai():
         "text": "jay's favorite color is red. It is a bold and vibrant color."
     }]
     question = "what is Usha's favorite color?"
+    response = generate_response(question, documents= documents)
+    logger.info(f"AI Response: {response}")
+    return response
+
+@app.get("/test2")
+def test_ai2():
+    """
+    Test the AI functionality by calling the AI model with a sample question.
+    """
+   
+    question = "If a student scores 10/10 on GA4 as well as a bonus, how would it appear on the dashboard?"
+
+    logger.info("--------------------   --------------------")
+    #get top 5 documents
+    documents = semantic_search(question, all_urls, all_texts, all_embeddings, top_k=5)    
+    logger.info(f"Retrieved {len(documents)} relevant documents for the question.")
+    # neatly print the documents
+    for doc in documents:
+        logger.info(f"Document URL: {doc['url']}")
+        logger.info(f"Document Text: {doc['text']}")
+
+    logger.info("--------------------   --------------------")
+
     response = generate_response(question, documents= documents)
     logger.info(f"AI Response: {response}")
     return response
