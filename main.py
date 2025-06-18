@@ -6,7 +6,8 @@ import numpy as np
 from ai import generate_response
 from sklearn.metrics.pairwise import cosine_distances
 from embedding import get_embedding
-
+import os
+import uvicorn
 
 
 # Configure logging at the start of your application
@@ -57,7 +58,7 @@ def semantic_search(question, urls, texts, embeddings, top_k=5):
     return [{"url": urls[i], "text": texts[i]} for i in top_indices]
 
 @app.get("/")
-async def root():
+def root():
     return {"message": "Hello Monica"}
 
 @app.get("/test")
@@ -100,3 +101,7 @@ def test_ai2():
     response = generate_response(question, documents= documents)
     logger.info(f"AI Response: {response}")
     return response
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
