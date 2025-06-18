@@ -22,8 +22,8 @@ def load_files():
     # Load embeddings and texts from the npz file
     # TODO: Make this path configurable or use a more dynamic approach
     #path ="D:\\dev\\tds-projects\\llm-teaching-assisst\\embeddings-website.npz"
-    path_to_website_embeddings = "embeddings-website.npz"
-    path_to_discourse_embeddings = "embeddings-discourse.npz"
+    path_to_website_embeddings = "embeddings-website-minillm.npz"
+    path_to_discourse_embeddings = "embeddings-discourse.minillm.npz"
 
     data = np.load(path_to_website_embeddings)
 
@@ -48,7 +48,7 @@ logger.info(f"Total number of embeddings: {len(all_embeddings)}")
 
 
 #------------------adding semantic search------------------
-def semantic_search(question, urls, texts, embeddings, top_k=5):
+def semantic_search(question, urls, texts, embeddings, top_k=10):
     """
     Search for the most relevant text chunks for the question.
     """

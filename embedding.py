@@ -30,7 +30,7 @@ def get_embedding(chunk):
     Returns:
         List[float]: The embedding vector for the input text.
     """
-    model_name='sentence-transformers/all-mpnet-base-v2'
+    model_name='all-MiniLM-L6-v2'
 
     model = SentenceTransformer(model_name)
     embedding = model.encode(chunk)
